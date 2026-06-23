@@ -103,8 +103,8 @@
   .cal-icon{border:2px solid var(--line);background:#fff;border-radius:10px;width:52px;height:52px;font-size:1.4rem;cursor:pointer;}
   .cal-icon:hover{border-color:var(--primary);}
   .calendar{margin-top:10px;border:2px solid var(--line);border-radius:12px;padding:12px;background:#fff;max-width:330px;}
-  .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;font-weight:700;}
-  .cal-head button{border:none;background:#e7e2d4;border-radius:8px;width:38px;height:38px;font-size:1.2rem;cursor:pointer;}
+  .cal-head{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:8px;font-weight:700;}
+  .cal-head select{font-family:inherit;font-size:1rem;font-weight:700;padding:6px 10px;border:2px solid var(--line);border-radius:8px;background:#fff;cursor:pointer;}
   .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
   .cal-grid .dow{text-align:center;font-size:.8rem;color:var(--ink-soft);font-weight:700;padding:4px 0;}
   .cal-grid button.day{border:1px solid var(--line);background:#fbfaf6;border-radius:8px;padding:9px 0;cursor:pointer;font-family:inherit;font-size:1rem;}
@@ -190,11 +190,12 @@
   }
   [hidden]{display:none!important;}
   @media print{
-    .noprint{display:none!important;}
-    body{background:#fff;padding:0;}main{max-width:100%;padding:0;}
-    section.card:not(#final){display:none!important;}
-    #final{display:block!important;}#final .btn{display:none!important;}
-    .certificate{box-shadow:none;}
+    body *{visibility:hidden!important;}
+    #final, #final *{visibility:visible!important;}
+    #final{display:block!important;position:absolute;left:0;top:0;width:100%;}
+    #final .btn{display:none!important;}
+    body{background:#fff;}
+    .certificate{box-shadow:none;border-color:#000;}
   }
 </style>
 </head>
@@ -339,11 +340,13 @@
   <div class="section-title" id="sec-interface"><span class="emoji">🧩</span> Les éléments d'interface <span class="line"></span></div>
 
   <section class="card" data-step data-domain="interface">
-    <div class="head"><span class="step-num">12</span><h3>Remplir un formulaire</h3><span class="badge" id="bdg12">0 / 3 champs</span></div>
-    <p class="intro">Plusieurs types de champs cohabitent. Le prénom servira pour votre attestation finale.</p>
-    <p class="consigne"><span class="lbl">👉 Consigne</span>Remplissez prénom et mot de passe, puis <strong>cliquez l'icône 📅</strong> et choisissez une date.</p>
+    <div class="head"><span class="step-num">12</span><h3>Remplir un formulaire</h3><span class="badge" id="bdg12">0 / 4 champs</span></div>
+    <p class="intro">Plusieurs types de champs cohabitent. Votre prénom et votre nom serviront à personnaliser votre attestation finale.</p>
+    <p class="consigne"><span class="lbl">👉 Consigne</span>Remplissez votre prénom, votre nom et un mot de passe, puis <strong>cliquez l'icône 📅</strong> et choisissez votre date de naissance.</p>
     <label class="field-label" for="champTexte">Prénom (champ texte) :</label>
-    <input type="text" id="champTexte" placeholder="Votre prénom…" autocomplete="off">
+    <input type="text" id="champTexte" placeholder="Votre vrai prénom…" autocomplete="given-name">
+    <label class="field-label" for="champNom">Nom de famille :</label>
+    <input type="text" id="champNom" placeholder="Votre nom de famille…" autocomplete="family-name">
     <label class="field-label" for="champMdp">Mot de passe (au moins 4 caractères, reste caché) :</label>
     <input type="password" id="champMdp" placeholder="••••">
     <label class="field-label" for="dateInput">Date de naissance — cliquez l'icône 📅 pour ouvrir le calendrier :</label>
@@ -353,7 +356,7 @@
     </div>
     <div class="calendar" id="calPopup" hidden></div>
     <ul class="checklist" id="form12">
-      <li data-k="t">Prénom rempli</li><li data-k="m">Mot de passe (4 caractères ou plus)</li><li data-k="d">Date choisie</li>
+      <li data-k="t">Prénom rempli</li><li data-k="n">Nom rempli</li><li data-k="m">Mot de passe (4 caractères ou plus)</li><li data-k="d">Date choisie</li>
     </ul>
     <div class="feedback" id="fb12">✅ Formulaire complet !</div>
   </section>
@@ -587,7 +590,9 @@
   function confetti(){const cs=['#1F3A6E','#EE8B27','#8BC34A','#1a56c4','#d8a72e','#7a3fb0'];for(let i=0;i<70;i++){const e=document.createElement('div');e.className='confetti';e.style.left=Math.random()*100+'vw';e.style.background=cs[i%cs.length];e.style.animationDuration=(2+Math.random()*2.2)+'s';e.style.transform='rotate('+Math.random()*360+'deg)';document.body.appendChild(e);setTimeout(()=>e.remove(),4600);}}
 
   function buildCertificate(){
-    const name=(document.getElementById('champTexte').value||'').trim()||'Participant·e';
+    const prenom=(document.getElementById('champTexte').value||'').trim();
+    const nom=(document.getElementById('champNom').value||'').trim();
+    const name=((prenom+' '+nom.toUpperCase()).trim())||'Participant·e';
     const dateStr=new Date().toLocaleDateString('fr-FR',{day:'numeric',month:'long',year:'numeric'});
     const chips=DOMAINS.map(d=>'<span>'+d.emoji+' '+d.name+'</span>').join('');
     document.getElementById('cert').innerHTML='<div class="seal">🏆</div><h2>Attestation de réussite</h2><p>Cette attestation certifie que</p><div class="name">'+name+'</div><p>a réussi les 28 défis de l\u2019atelier <strong>Premiers Clics</strong> et maîtrise les bases de l\u2019ordinateur :</p><div class="doms">'+chips+'</div><p class="date">Délivrée le '+dateStr+'</p>';
@@ -676,14 +681,15 @@
   grid.addEventListener('keydown',e=>{const k=e.key;if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(k))return;e.preventDefault();let nx=px,ny=py;if(k==='ArrowUp')ny--;else if(k==='ArrowDown')ny++;else if(k==='ArrowLeft')nx--;else nx++;if(nx<0||nx>=COLS||ny<0||ny>=ROWS)return;if(walls.has(nx+','+ny)){nudge('nudge11','Un mur ! Contournez-le.');return;}px=nx;py=ny;if(!hasKey&&px===kx&&py===ky){hasKey=true;setBadge(11,'🚩 au drapeau !');}if(px===gx&&py===gy){if(hasKey){validate(11);setBadge(11,'Réussi ✓');}else nudge('nudge11','Allez d\u2019abord chercher la clé 🔑 !');}draw();});
 
   /* 12 formulaire + calendrier sur clic icône */
-  const list12=document.getElementById('form12'),st12={t:false,m:false,d:false};
-  function chk12(){let n=0;['t','m','d'].forEach(k=>{const li=list12.querySelector('[data-k="'+k+'"]');li.classList.toggle('ok',st12[k]);if(st12[k])n++;});setBadge(12,n+' / 3 champs');if(n===3)validate(12);}
+  const list12=document.getElementById('form12'),st12={t:false,n:false,m:false,d:false};
+  function chk12(){let n=0;['t','n','m','d'].forEach(k=>{const li=list12.querySelector('[data-k="'+k+'"]');li.classList.toggle('ok',st12[k]);if(st12[k])n++;});setBadge(12,n+' / 4 champs');if(n===4)validate(12);}
   document.getElementById('champTexte').addEventListener('input',e=>{st12.t=e.target.value.trim().length>=2;chk12();});
+  document.getElementById('champNom').addEventListener('input',e=>{st12.n=e.target.value.trim().length>=2;chk12();});
   document.getElementById('champMdp').addEventListener('input',e=>{st12.m=e.target.value.length>=4;chk12();});
   const dateInput=document.getElementById('dateInput'),calIcon=document.getElementById('calIcon'),calPopup=document.getElementById('calPopup');
   const MONTHS=['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
   let viewDate=new Date();viewDate.setDate(1);
-  function renderCal(){const y=viewDate.getFullYear(),m=viewDate.getMonth();const startDow=(new Date(y,m,1).getDay()+6)%7;const days=new Date(y,m+1,0).getDate();let h='<div class="cal-head"><button type="button" id="calPrev">‹</button><span>'+MONTHS[m]+' '+y+'</span><button type="button" id="calNext">›</button></div><div class="cal-grid">';['L','M','M','J','V','S','D'].forEach(d=>h+='<div class="dow">'+d+'</div>');for(let i=0;i<startDow;i++)h+='<div></div>';for(let d=1;d<=days;d++)h+='<button type="button" class="day" data-d="'+d+'">'+d+'</button>';h+='</div>';calPopup.innerHTML=h;calPopup.querySelector('#calPrev').onclick=()=>{viewDate.setMonth(m-1);renderCal();};calPopup.querySelector('#calNext').onclick=()=>{viewDate.setMonth(m+1);renderCal();};calPopup.querySelectorAll('.day').forEach(b=>b.onclick=()=>{const dd=String(b.dataset.d).padStart(2,'0'),mm=String(m+1).padStart(2,'0');dateInput.value=dd+'/'+mm+'/'+y;calPopup.hidden=true;st12.d=true;chk12();});}
+  function renderCal(){const y=viewDate.getFullYear(),m=viewDate.getMonth();const startDow=(new Date(y,m,1).getDay()+6)%7;const days=new Date(y,m+1,0).getDate();const YMAX=new Date().getFullYear(),YMIN=1920;let mo='';MONTHS.forEach((nm,i)=>mo+='<option value="'+i+'"'+(i===m?' selected':'')+'>'+nm+'</option>');let yo='';for(let yy=YMAX;yy>=YMIN;yy--)yo+='<option value="'+yy+'"'+(yy===y?' selected':'')+'>'+yy+'</option>';let h='<div class="cal-head"><select id="calMonth" aria-label="Mois">'+mo+'</select><select id="calYear" aria-label="Année">'+yo+'</select></div><div class="cal-grid">';['L','M','M','J','V','S','D'].forEach(d=>h+='<div class="dow">'+d+'</div>');for(let i=0;i<startDow;i++)h+='<div></div>';for(let d=1;d<=days;d++)h+='<button type="button" class="day" data-d="'+d+'">'+d+'</button>';h+='</div>';calPopup.innerHTML=h;calPopup.querySelector('#calMonth').onchange=e=>{viewDate.setMonth(+e.target.value);renderCal();};calPopup.querySelector('#calYear').onchange=e=>{viewDate.setFullYear(+e.target.value);renderCal();};calPopup.querySelectorAll('.day').forEach(b=>b.onclick=()=>{const dd=String(b.dataset.d).padStart(2,'0'),mm=String(m+1).padStart(2,'0');dateInput.value=dd+'/'+mm+'/'+y;calPopup.hidden=true;st12.d=true;chk12();});}
   calIcon.addEventListener('click',()=>{calPopup.hidden=!calPopup.hidden;if(!calPopup.hidden)renderCal();});
 
   /* 13 bon lien */
@@ -794,7 +800,7 @@
     'Le café est encore chaud.',
     'Nous allons à la médiathèque.',
     'Mon courriel est bien arrivé.',
-    "À quelle heure est le rendez-vous ?",
+    'Le rendez-vous est à quinze heures.',
     'Bravo, vous tapez de mieux en mieux !',
     "N'oubliez pas d'enregistrer le document.",
     'Quel beau soleil ce matin !',
